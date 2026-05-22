@@ -1,30 +1,5 @@
-// Initial Transcribed Data from Mohit's Screenshot
-const defaultTransactions = [
-  { id: "tx-1", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 1500, type: "lent", mode: "Cash", description: "given to nannu friends", status: "pending" },
-  { id: "tx-2", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 219, type: "lent", mode: "Amazon Reward", description: "Dalpat Mobile Recharge", status: "pending" },
-  { id: "tx-3", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 19, type: "lent", mode: "Amazon Reward", description: "Nandini Data Mobile Recharge", status: "pending" },
-  { id: "tx-4", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 349, type: "lent", mode: "Amazon Reward", description: "Nandini Mobile Recharge", status: "pending" },
-  { id: "tx-5", date: "2026-05-22", person: "घर खर्च", category: "udhar", amount: 707, type: "lent", mode: "Amazon Reward", description: "Jio Air Fiber Recharge", status: "pending" },
-  { id: "tx-6", date: "2026-05-22", person: "घर खर्च", category: "udhar", amount: 3069, type: "lent", mode: "Upi Lite phonepe", description: "(Ghee5Kg,Khopra,Mirch tata,Thandai)", status: "pending" },
-  { id: "tx-7", date: "2026-05-22", person: "vidya", category: "udhar", amount: 72, type: "lent", mode: "go sats extra 200 mohit personal", description: "hair color raju mall", status: "pending" },
-  { id: "tx-8", date: "2026-05-22", person: "घर खर्च", category: "udhar", amount: 2063, type: "lent", mode: "Credit Card Icici", description: "New Amazon Fresh order", status: "pending" },
-  { id: "tx-9", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 193, type: "lent", mode: "phonepe upi lite", description: "apple for dalpat jio mart", status: "pending" },
-  { id: "tx-10", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 252, type: "lent", mode: "google pay lite", description: "apple coconut dalpat jio mart", status: "pending" },
-  { id: "tx-11", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 76, type: "lent", mode: "google pay lite", description: "aadhar card fees", status: "pending" },
-  { id: "tx-12", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 403, type: "lent", mode: "Amazon rewards", description: "blinkit nandini print", status: "pending" },
-  { id: "tx-13", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 210, type: "lent", mode: "google pay lite", description: "bajri jowar aata", status: "pending" },
-  { id: "tx-14", date: "2026-05-22", person: "vidya", category: "udhar", amount: 100, type: "lent", mode: "google pay lite", description: "bajri vidya", status: "pending" },
-  { id: "tx-15", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 1000, type: "lent", mode: "cash", description: "petrol", status: "pending" },
-  { id: "tx-16", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 218, type: "lent", mode: "google pay lite", description: "medipulse canteen and medicine", status: "pending" },
-  
-  // New Screenshot House Expenses (to be recovered from Dalpat/Vidya)
-  { id: "tx-ss-1", date: "2026-05-22", person: "dalpat", category: "house", amount: 1000, type: "lent", mode: "Cash", description: "1000 to nandini", status: "pending" },
-  { id: "tx-ss-2", date: "2026-05-22", person: "dalpat", category: "house", amount: 250, type: "lent", mode: "Cash", description: "250 JioMart Vegetabl", status: "pending" },
-  { id: "tx-ss-3", date: "2026-05-22", person: "dalpat", category: "house", amount: 700, type: "lent", mode: "Cash", description: "700 Blinkit Vegetable Medipulse", status: "pending" },
-  { id: "tx-ss-4", date: "2026-05-22", person: "dalpat", category: "house", amount: 2000, type: "lent", mode: "Cash", description: "2000 cash to Nandini Print", status: "pending" },
-  { id: "tx-ss-5", date: "2026-05-22", person: "vidya", category: "house", amount: 170, type: "lent", mode: "Cash", description: "170 mirchi bada", status: "pending" },
-  { id: "tx-ss-6", date: "2026-05-22", person: "dalpat", category: "house", amount: 300, type: "lent", mode: "Cash", description: "300rs aam 1kg,mirch 2kg,kharbuja", status: "pending" }
-];
+// Initial Transcribed Data (Empty by default for privacy)
+const defaultTransactions = [];
 
 // App State
 const defaultDashboards = [
