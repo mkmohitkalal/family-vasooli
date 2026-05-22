@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mohit's Family Vasooli Dashboard</title>
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Identity Services client-side script for Option B -->
+  <script src="https://accounts.google.com/gsi/client" onload="onGoogleLibraryLoad()" async defer></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <div class="glass-bg"></div>
+  
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+        <div>
+          <h1>वसूली (Vasooli) Dashboard</h1>
+          <p class="subtitle">Personal Debt & House Expense Tracker by Mohit</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle" class="btn btn-secondary btn-icon" title="Toggle Theme">
+          <i class="fa-solid fa-sun"></i>
+        </button>
+        <button id="btn-cloud-settings" class="btn btn-secondary btn-icon" title="Cloud Sync Settings">
+          <i class="fa-solid fa-cloud"></i>
+        </button>
+        <div id="user-profile-pill" class="user-profile-pill" style="display: none;">
+          <div id="user-avatar-container" class="user-avatar-container">
+            <img id="user-avatar" class="user-avatar" src="" alt="Avatar" referrerpolicy="no-referrer" style="display: none;">
+            <div id="user-avatar-initials" class="user-avatar-initials">M</div>
+          </div>
+          <span id="user-name" class="user-name">User</span>
+          <button id="btn-sign-out" class="btn btn-sm btn-danger" title="Sign Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+        <button id="btn-export-csv" class="btn btn-secondary">
+          <i class="fa-solid fa-file-csv"></i> Export CSV
+        </button>
+        <button id="btn-backup" class="btn btn-secondary">
+          <i class="fa-solid fa-download"></i> Backup Data
+        </button>
+        <button id="btn-restore-trigger" class="btn btn-secondary">
+          <i class="fa-solid fa-upload"></i> Restore
+        </button>
+        <input type="file" id="restore-file" style="display: none;" accept=".json">
+        <button id="btn-add-tx" class="btn btn-primary">
+          <i class="fa-solid fa-plus"></i> Add Transaction
+        </button>
+      </div>
+    </header>
+
+    <!-- Dashboard Selector Navigation -->
+    <div class="dash-selector-container">
+      <div id="dash-selector-list" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; width: 100%;">
+        <!-- Dynamic Dashboard Buttons rendered here -->
+      </div>
+    </div>
+
+    <!-- Main Metrics Grid -->
+    <section class="metrics-grid">
+      <!-- Total Recovery Card -->
+      <div class="metric-card recovery-card">
+        <div class="card-glow"></div>
+        <div class="metric-info">
+          <span class="metric-label">कुल वसूली (Total Recovery Pending)</span>
+          <h2 id="metric-total-pending">₹0</h2>
+          <span class="metric-help text-muted">What others owe Mohit</span>
+        </div>
+        <div class="metric-icon pending-color">
+          <i class="fa-solid fa-hand-holding-dollar"></i>
+        </div>
+      </div>
+
+      <!-- Credit Card Dues Card -->
+      <div class="metric-card cc-dues-card">
+        <div class="card-glow"></div>
+        <div class="metric-info">
+          <span class="metric-label">ICICI CC Dues (बैंक को देना है)</span>
+          <h2 id="metric-cc-dues">₹0</h2>
+          <span class="metric-help text-muted">Paid via Credit Card (Unpaid bills)</span>
+        </div>
+        <div class="metric-icon cc-color">
+          <i class="fa-solid fa-credit-card"></i>
+        </div>
+      </div>
+
+      <!-- Own Money Card -->
+      <div class="metric-card own-funds-card">
+        <div class="card-glow"></div>
+        <div class="metric-info">
+          <span class="metric-label">खुद का पैसा (Own Capital out)</span>
+          <h2 id="metric-own-funds">₹0</h2>
+          <span class="metric-help text-muted">Paid from Cash/UPI/Rewards</span>
+        </div>
+        <div class="metric-icon own-funds-color">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+      </div>
+
+      <!-- Total House Expenses Card -->
+      <div class="metric-card expense-card" id="metric-card-house-extra">
+        <div class="card-glow"></div>
+        <div class="metric-info">
+          <span class="metric-label">घर खर्च (House Expenses Total)</span>
+          <h2 id="metric-total-house">₹0</h2>
+          <span class="metric-help text-muted">Shared household costs</span>
+        </div>
+        <div class="metric-icon expense-color">
+          <i class="fa-solid fa-house-chimney-user"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two Column Layout: Left (Members & Quick Add), Right (Transactions) -->
+    <div class="dashboard-body">
+      
+      <!-- Left Column -->
+      <aside class="sidebar-column">
+        <!-- Family Members Summary -->
+        <div class="content-panel members-panel">
+          <div class="panel-header">
+            <h3><i class="fa-solid fa-users"></i> Member Breakdown</h3>
+          </div>
+          <div id="members-list" class="members-list">
+            <!-- Dynamic Member Cards will be rendered here -->
+          </div>
+        </div>
+
+        <!-- Smart Bulk Note Parser -->
+        <div class="content-panel parser-panel">
+          <div class="panel-header">
+            <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Smart Bulk Parser</h3>
+            <span class="badge">Beta</span>
+          </div>
+          <p class="panel-desc">Paste raw notes here to automatically detect transactions. We will parse names, amounts, and descriptions.</p>
+          <div class="parser-form">
+            <textarea id="raw-notes-input" placeholder="Example:
+1500 given to nannu friends dalpat Cash
+219 Dalpat Mobile Recharge dalpat Amazon Reward
+72 hair color raju mall vidya cash
+3069 Ghee5Kg,Khopra,Mirch tata,Thandai घर खर्च UPI"></textarea>
+            <button id="btn-parse-notes" class="btn btn-accent btn-full">
+              <i class="fa-solid fa-magnifying-glass-dollar"></i> Parse Notes
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Column -->
+      <main class="main-column">
+        <!-- Transactions Panel -->
+        <div class="content-panel transactions-panel">
+          <div class="panel-header flex-header">
+            <div class="title-with-count" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+              <h3><i class="fa-solid fa-list-check"></i> Transactions</h3>
+              <span id="tx-count" class="counter-badge" title="Transaction Count">0</span>
+              <span id="tab-pending-recovery" class="tab-pending-badge" title="Pending Recovery for current view">Total Pending: ₹0</span>
+            </div>
+            
+            <div class="table-controls">
+              <!-- Search -->
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="tx-search" placeholder="Search notes or mode...">
+              </div>
+
+              <!-- Filter Tabs -->
+              <div class="filter-tabs">
+                <button class="tab-btn active" data-filter="all">All</button>
+                <button class="tab-btn" data-filter="pending">Pending</button>
+                <button class="tab-btn" data-filter="recovered">Recovered</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="tx-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Person/Category</th>
+                  <th>Description</th>
+                  <th>Payment Mode</th>
+                  <th class="text-right">Amount</th>
+                  <th>Status</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tx-table-body">
+                <!-- Transactions will be loaded here dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Transaction Modal -->
+  <div id="tx-modal" class="modal">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Add Transaction</h3>
+        <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="tx-form">
+        <input type="hidden" id="tx-id">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tx-category">Category</label>
+            <select id="tx-category" required>
+              <option value="udhar">Mohit वसूली Personal</option>
+              <option value="house">उधार (वसूली / घर खर्च)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tx-person">Person</label>
+            <div class="select-with-new">
+              <select id="tx-person">
+                <option value="">Select Person...</option>
+                <option value="dalpat">dalpat</option>
+                <option value="vidya">vidya</option>
+                <option value="घर खर्च">घर खर्च (General House)</option>
+              </select>
+              <button type="button" id="btn-add-custom-person" class="btn btn-secondary btn-sm" title="Add Custom Person">
+                <i class="fa-solid fa-plus"></i> New
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Field to add new category inline -->
+        <div id="custom-person-input-group" class="form-group" style="display: none;">
+          <label for="tx-custom-person">New Person Name</label>
+          <div class="input-inline">
+            <input type="text" id="tx-custom-person" placeholder="Enter name (e.g. Papa, Rohit)">
+            <button type="button" id="btn-save-custom-person" class="btn btn-accent btn-sm">Save</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tx-amount">Amount (₹)</label>
+            <input type="number" id="tx-amount" min="1" step="any" placeholder="Enter amount" required>
+          </div>
+          <div class="form-group">
+            <label for="tx-date">Date</label>
+            <input type="date" id="tx-date" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tx-type">Transaction Type</label>
+            <select id="tx-type" required>
+              <option value="lent">Lent / Paid (Mohit gave)</option>
+              <option value="recovered">Recovered (Returned to Mohit)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tx-mode">Payment Mode / Source</label>
+            <input type="text" id="tx-mode" placeholder="e.g. Cash, GPay, Amazon Reward" list="payment-modes">
+            <datalist id="payment-modes">
+              <option value="Cash">
+              <option value="UPI PhonePe">
+              <option value="GPay">
+              <option value="Credit Card ICICI">
+              <option value="Amazon Reward">
+              <option value="UPI Lite">
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="tx-description">Description / Notes</label>
+          <textarea id="tx-description" placeholder="e.g. Mobile recharge, petrol, grocery, etc." required></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Smart Bulk Parser Preview Modal -->
+  <div id="parser-modal" class="modal">
+    <div class="modal-content glass-card wide-modal">
+      <div class="modal-header">
+        <h3>Verify Parsed Transactions</h3>
+        <button class="close-modal" id="btn-close-parser"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">Review the extracted transactions below. You can edit any details or uncheck transactions you don't want to import.</p>
+        <div class="table-container parser-table-container">
+          <table class="tx-table">
+            <thead>
+              <tr>
+                <th width="40px"><input type="checkbox" id="select-all-parsed" checked></th>
+                <th>Person</th>
+                <th>Category</th>
+                <th>Amount (₹)</th>
+                <th>Description</th>
+                <th>Payment Mode</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody id="parsed-tx-body">
+              <!-- Parsed entries will render here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="parsed-summary" id="parsed-summary-text">0 items selected</span>
+        <div>
+          <button type="button" class="btn btn-secondary" id="btn-cancel-parser">Cancel</button>
+          <button type="button" class="btn btn-accent" id="btn-import-parsed">Import Selected</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast">
+    <span id="toast-message">Message here</span>
+  </div>
+
+  <!-- Google Auth Login Overlay -->
+  <div id="login-overlay" class="login-overlay" style="display: none;">
+    <div class="login-box glass-card animate-zoom" id="login-main-panel">
+      <div class="logo-icon large-logo"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+      <h2>Secure Cloud Access</h2>
+      <p class="text-muted" style="margin-bottom: 1.5rem;">Sign in with Google to sync your transactions and dashboards across all your devices.</p>
+      
+      <!-- Google Sign-in Active Container (Client ID set) -->
+      <div id="google-signin-active-container" style="display: none; margin-bottom: 1.5rem;">
+        <div id="google-signin-btn-container" style="width: 100%; display: flex; justify-content: center; min-height: 40px; margin-bottom: 1rem;"></div>
+        <div style="font-size: 0.75rem; text-align: center; color: var(--text-muted);">
+          Using Client ID: <span id="display-client-id" style="font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; display: inline-block; vertical-align: bottom;">...</span>
+          <button id="btn-change-client-id" class="btn-link" style="color: var(--color-primary); background: none; border: none; cursor: pointer; text-decoration: underline; margin-left: 5px; font-size: 0.75rem; font-family: inherit; padding: 0;">Change</button>
+        </div>
+      </div>
+
+      <!-- Google Sign-in Config Container (Client ID NOT set) -->
+      <div id="google-signin-config-container" style="display: none; margin-bottom: 1.5rem; text-align: left;">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="config-google-client-id" style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.85rem;">Google Client ID</label>
+          <input type="text" id="config-google-client-id" placeholder="xxxxxx-xxxxxxxx.apps.googleusercontent.com" style="width: 100%; padding: 0.75rem; border-radius: 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--card-border); color: var(--text-main); outline: none; font-family: monospace; font-size: 0.8rem;">
+          <span class="help-text" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem; line-height: 1.3;">
+            Get one from the <a href="https://console.cloud.google.com/" target="_blank" style="color: var(--color-primary); text-decoration: underline;">Google Cloud Console</a>. Enable OAuth and set Authorized JavaScript Origins to include your website origin.
+          </span>
+        </div>
+        <button id="btn-save-client-id" class="btn btn-primary btn-full">
+          <i class="fa-solid fa-floppy-disk"></i> Save Client ID
+        </button>
+      </div>
+
+      <button id="btn-login-offline" class="btn btn-secondary btn-sm btn-full">
+        <i class="fa-solid fa-wifi-slash"></i> Use Offline (Local Mode)
+      </button>
+    </div>
+  </div>
+
+  <!-- Cloud Settings Modal -->
+  <div id="cloud-modal" class="modal">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h3>Cloud Sync Status</h3>
+        <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem 0.5rem;">
+        <div class="connection-status-banner" id="cloud-status-banner" style="padding: 1rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border);">
+          <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.25rem;"></i>
+          <div>
+            <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 500;">Connection Mode</div>
+            <span id="cloud-status-text">Disconnected (Local Storage)</span>
+          </div>
+        </div>
+
+        <div id="sync-active-details" style="display: none; margin-bottom: 1.5rem;">
+          <div style="background: rgba(255, 255, 255, 0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--card-border);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem;">
+              <span class="text-muted">Linked Google Email:</span>
+              <strong id="sync-email-display">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem;">
+              <span class="text-muted">Last Cloud Sync:</span>
+              <strong id="sync-last-time">Never</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+              <span class="text-muted">Cloud Keys:</span>
+              <span id="sync-key-display" style="font-family: monospace; font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px;">-</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+            <button id="btn-sync-now" class="btn btn-accent btn-full">
+              <i class="fa-solid fa-rotate"></i> Sync Data Now
+            </button>
+            <button id="btn-cloud-disconnect" class="btn btn-secondary" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.2);">
+              <i class="fa-solid fa-right-from-bracket"></i> Disconnect
+            </button>
+          </div>
+        </div>
+
+        <div id="sync-inactive-details">
+          <p class="text-muted" style="font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem;">
+            You are currently working in **Local Storage mode**. Your data is saved only on this device. Sign in with Google to enable automatic cloud backup and sync data with your mobile phone or other computers.
+          </p>
+          <button id="btn-modal-google-login" class="btn btn-primary btn-google btn-full">
+            <i class="fa-brands fa-google"></i> Sign in with Google
+          </button>
+        </div>
+
+        <!-- Google OAuth Client ID Configuration Section -->
+        <div style="margin-top: 1.5rem; border-top: 1px solid var(--card-border); padding-top: 1.25rem;">
+          <h4 style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-main);"><i class="fa-solid fa-gear"></i> Google OAuth Settings</h4>
+          <div class="form-group" style="margin-bottom: 0.5rem; text-align: left;">
+            <label for="settings-google-client-id" style="display: block; margin-bottom: 0.35rem; font-weight: 500; font-size: 0.75rem; color: var(--text-muted);">Google Client ID</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="settings-google-client-id" placeholder="xxxxxx-xxxxxxxx.apps.googleusercontent.com" style="flex: 1; padding: 0.5rem 0.75rem; border-radius: 6px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--card-border); color: var(--text-main); outline: none; font-family: monospace; font-size: 0.75rem;">
+              <button id="btn-save-settings-client-id" class="btn btn-secondary btn-sm" style="padding: 0.5rem 0.75rem;">Save</button>
+            </div>
+            <span class="help-text" style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.25rem; line-height: 1.3;">
+              To use your own domain or localhost origin, paste your client ID from the Google Cloud Console.
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Dashboard Modal -->
+  <div id="dashboard-modal" class="modal">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h3>Create New Dashboard</h3>
+        <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="dashboard-form">
+        <div class="form-group">
+          <label for="dash-name">Dashboard Name</label>
+          <input type="text" id="dash-name" placeholder="e.g. Personal Expenses, Business" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dash-icon">Icon (FontAwesome class)</label>
+            <input type="text" id="dash-icon" value="fa-solid fa-folder" placeholder="e.g. fa-solid fa-wallet" required>
+          </div>
+          <div class="form-group">
+            <label for="dash-color">Tab Theme Color</label>
+            <input type="color" id="dash-color" value="#8b5cf6">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Dashboard</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
