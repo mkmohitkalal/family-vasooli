@@ -1,10 +1,41 @@
-// Initial Transcribed Data (Empty by default for privacy)
-const defaultTransactions = [];
+// Initial Transcribed Data from Mohit's Spreadsheet
+const defaultTransactions = [
+  { id: "tx-1", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 1500, type: "lent", mode: "Cash", description: "given to nannu friends", status: "pending" },
+  { id: "tx-2", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 219, type: "lent", mode: "Amazon Reward", description: "Dalpat Mobile Recharge", status: "pending" },
+  { id: "tx-3", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 19, type: "lent", mode: "Amazon Reward", description: "Nandini Data Mobile Recharge", status: "pending" },
+  { id: "tx-4", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 349, type: "lent", mode: "Amazon Reward", description: "Nandini Mobile Recharge", status: "pending" },
+  { id: "tx-5", date: "2026-05-22", person: "घर खर्च", category: "udhar", amount: 707, type: "lent", mode: "Amazon Reward", description: "Jio Air Fiber Recharge", status: "pending" },
+  { id: "tx-6", date: "2026-05-22", person: "घर खर्च", category: "udhar", amount: 3069, type: "lent", mode: "UPI Lite", description: "(Ghee5Kg,Khopra,Mirch tata,Thandai)", status: "pending" },
+  { id: "tx-7", date: "2026-05-22", person: "vidya", category: "udhar", amount: 72, type: "lent", mode: "UPI Lite", description: "hair color raju mall", status: "pending" },
+  { id: "tx-8", date: "2026-05-22", person: "घर खर्च", category: "udhar", amount: 2063, type: "lent", mode: "Credit Card Icici", description: "New Amazon Fresh order", status: "pending" },
+  { id: "tx-9", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 193, type: "lent", mode: "UPI Lite", description: "apple for dalpat jio mart", status: "pending" },
+  { id: "tx-10", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 252, type: "lent", mode: "UPI Lite", description: "apple coconut dalpat jio mart", status: "pending" },
+  { id: "tx-11", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 76, type: "lent", mode: "UPI Lite", description: "aadhar card fees", status: "pending" },
+  { id: "tx-12", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 403, type: "lent", mode: "Amazon rewards", description: "blinkit nandini print", status: "pending" },
+  { id: "tx-13", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 210, type: "lent", mode: "UPI Lite", description: "bajri jowar aata", status: "pending" },
+  { id: "tx-14", date: "2026-05-22", person: "vidya", category: "udhar", amount: 100, type: "lent", mode: "UPI Lite", description: "bajri vidya", status: "pending" },
+  { id: "tx-15", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 1000, type: "lent", mode: "cash", description: "petrol", status: "pending" },
+  { id: "tx-16", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 218, type: "lent", mode: "UPI Lite", description: "medipulse canteen and medicine", status: "pending" },
+  { id: "tx-17", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 812, type: "lent", mode: "Amazon rewards", description: "blinkit Home vegetable", status: "pending" },
+  { id: "tx-18", date: "2026-05-22", person: "घर खर्च", category: "udhar", amount: 1000, type: "lent", mode: "cash", description: "1000 cash to poonam water", status: "pending" },
+  { id: "tx-19", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 200, type: "lent", mode: "UPI Lite", description: "200 rs petrol scooty", status: "pending" },
+  { id: "tx-20", date: "2026-05-22", person: "vijay", category: "udhar", amount: 5404, type: "lent", mode: "Credit Card Icici", description: "5404 cooler amazon", status: "pending" },
+  { id: "tx-21", date: "2026-05-22", person: "dalpat", category: "udhar", amount: 498, type: "lent", mode: "UPI Lite", description: "498 petrol,apple,tamatar", status: "pending" },
+  { id: "tx-22", date: "2026-05-22", person: "vidya", category: "udhar", amount: 500, type: "lent", mode: "cash", description: "500 rs to bharti", status: "pending" },
+  
+  // Split House Expenses (to be recovered from Dalpat/Vidya)
+  { id: "tx-ss-1", date: "2026-05-22", person: "dalpat", category: "house", amount: 1000, type: "lent", mode: "Cash", description: "1000 to nandini", status: "pending" },
+  { id: "tx-ss-2", date: "2026-05-22", person: "dalpat", category: "house", amount: 250, type: "lent", mode: "Cash", description: "250 JioMart Vegetabl", status: "pending" },
+  { id: "tx-ss-3", date: "2026-05-22", person: "dalpat", category: "house", amount: 700, type: "lent", mode: "Cash", description: "700 Blinkit Vegetable Medipulse", status: "pending" },
+  { id: "tx-ss-4", date: "2026-05-22", person: "dalpat", category: "house", amount: 2000, type: "lent", mode: "Cash", description: "2000 cash to Nandini Print", status: "pending" },
+  { id: "tx-ss-5", date: "2026-05-22", person: "vidya", category: "house", amount: 170, type: "lent", mode: "Cash", description: "170 mirchi bada", status: "pending" },
+  { id: "tx-ss-6", date: "2026-05-22", person: "dalpat", category: "house", amount: 300, type: "lent", mode: "Cash", description: "300rs aam 1kg,mirch 2kg,kharbuja", status: "pending" }
+];
 
 // App State
 const defaultDashboards = [
   { id: "udhar", name: "Mohit वसूली Personal", icon: "fa-solid fa-hand-holding-dollar", color: "#6366f1" },
-  { id: "house", name: "उधार (वसूली / घर खर्च)", icon: "fa-solid fa-house-chimney-user", color: "#0d9488" }
+  { id: "house", name: "उधार from (वसूली घर खर्च)", icon: "fa-solid fa-house-chimney-user", color: "#0d9488" }
 ];
 
 let transactions = [];
@@ -15,6 +46,12 @@ let currentStatusFilter = 'all'; // 'all', 'pending', 'recovered'
 let currentPersonFilter = 'all'; // 'all' or person name
 let parsedTransactionsBuffer = [];
 let memberPendingSums = {}; // key: person/category, value: net pending recovery
+
+function isHouseDashboard(id) {
+  if (id === 'house') return true;
+  const dashObj = dashboards.find(d => d.id === id);
+  return dashObj && (dashObj.name === 'उधार from (वसूली घर खर्च)' || dashObj.name.includes('घर खर्च'));
+}
 
 let supabaseClient = null;
 let isCloudActive = false;
@@ -551,7 +588,7 @@ function renderDashboardSelectors() {
       currentDashboard = dash.id;
 
       // Toggle body classes for theme shifts
-      if (currentDashboard === 'house') {
+      if (isHouseDashboard(currentDashboard)) {
         bodyEl.classList.add('dash-house-active');
       } else {
         bodyEl.classList.remove('dash-house-active');
@@ -623,6 +660,77 @@ async function createDashboard(name, icon, color) {
   showToast(`Dashboard "${name}" created!`);
 }
 
+// Automatically remove duplicates based on transaction details
+function deduplicateTransactions() {
+  const seen = new Set();
+  const unique = [];
+  let updated = false;
+
+  transactions.forEach(tx => {
+    // Generate a unique key ignoring ID, so duplicate content is matched
+    const key = `${tx.date}_${tx.person}_${tx.category}_${tx.amount}_${tx.type}_${(tx.mode || '').toLowerCase()}_${(tx.description || '').toLowerCase()}_${tx.status}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(tx);
+    } else {
+      updated = true;
+      console.log("Removing duplicate transaction:", tx);
+    }
+  });
+
+  if (updated) {
+    transactions = unique;
+    saveTransactions();
+  }
+  return updated;
+}
+
+// Overwrite and force clean udhar category data once to match new spreadsheet image exactly
+function forceOverwriteUdhar() {
+  const flagKey = 'vasooli_force_overwrite_udhar_v5';
+  if (localStorage.getItem(flagKey) === 'true') return false;
+
+  // 1. Remove all category === 'udhar'
+  transactions = transactions.filter(t => t.category !== 'udhar');
+
+  // 2. Fetch all udhar transactions from defaultTransactions
+  const newUdhar = defaultTransactions.filter(t => t.category === 'udhar');
+
+  // 3. Append them
+  transactions = [...transactions, ...newUdhar];
+
+  // 4. Save
+  saveTransactions();
+
+  // 5. Mark flag
+  localStorage.setItem(flagKey, 'true');
+  console.log("Forced overwrite of Mohit Personal entries completed!");
+  return true;
+}
+
+// Overwrite and force clean house category data once to match split house expenses image exactly
+function forceOverwriteHouse() {
+  const flagKey = 'vasooli_force_overwrite_house_v5';
+  if (localStorage.getItem(flagKey) === 'true') return false;
+
+  // 1. Remove all category === 'house'
+  transactions = transactions.filter(t => t.category !== 'house');
+
+  // 2. Fetch all house transactions from defaultTransactions
+  const newHouse = defaultTransactions.filter(t => t.category === 'house');
+
+  // 3. Append them
+  transactions = [...transactions, ...newHouse];
+
+  // 4. Save
+  saveTransactions();
+
+  // 5. Mark flag
+  localStorage.setItem(flagKey, 'true');
+  console.log("Forced overwrite of House Expenses entries completed!");
+  return true;
+}
+
 // Load Data from Cloud (online) or LocalStorage (offline)
 async function loadData() {
   if (currentUser && currentUser.uhash) {
@@ -630,6 +738,40 @@ async function loadData() {
     if (cloudState) {
       if (cloudState.txs) {
         transactions = decompressTransactions(cloudState.txs);
+        let cloudMigrated = false;
+        transactions.forEach(tx => {
+          if (tx.person === 'घर खर्च' && tx.category !== 'udhar') {
+            tx.category = 'udhar';
+            cloudMigrated = true;
+          }
+          if (tx.id.startsWith('tx-ss-') && tx.category !== 'house') {
+            tx.category = 'house';
+            cloudMigrated = true;
+          }
+        });
+        // Ensure all default transactions are present in cloud loaded list
+        defaultTransactions.forEach(defTx => {
+          if (!transactions.some(t => t.id === defTx.id)) {
+            transactions.push(defTx);
+            cloudMigrated = true;
+          }
+        });
+
+        if (forceOverwriteUdhar()) {
+          cloudMigrated = true;
+        }
+        if (forceOverwriteHouse()) {
+          cloudMigrated = true;
+        }
+
+        if (deduplicateTransactions()) {
+          cloudMigrated = true;
+        }
+
+        if (cloudMigrated) {
+          saveTransactions();
+          setTimeout(() => saveDataToCloud(), 1000);
+        }
       }
       if (cloudState.dashes) {
         const cloudDashes = decompressDashboards(cloudState.dashes);
@@ -714,7 +856,30 @@ function loadLocalDataFallback() {
       migrated = true;
     }
 
-    if (migrated) {
+    // Ensure all default transactions are present locally
+    let localUpdated = false;
+    defaultTransactions.forEach(defTx => {
+      if (!transactions.some(t => t.id === defTx.id)) {
+        transactions.push(defTx);
+        localUpdated = true;
+      }
+    });
+
+    // Force Overwrite Mohit Personal entries once
+    if (forceOverwriteUdhar()) {
+      localUpdated = true;
+    }
+    // Force Overwrite House split entries once
+    if (forceOverwriteHouse()) {
+      localUpdated = true;
+    }
+
+    // Deduplicate
+    if (deduplicateTransactions()) {
+      localUpdated = true;
+    }
+
+    if (migrated || localUpdated) {
       saveTransactions();
     }
   } else {
@@ -1649,6 +1814,16 @@ function calculateMetrics() {
     cardHouseExtra.style.display = 'none';
   }
 
+  // Hide Credit Card Dues Card on the House expenses dashboard
+  const ccCard = document.querySelector('.cc-dues-card');
+  if (ccCard) {
+    if (isHouseDashboard(currentDashboard)) {
+      ccCard.style.display = 'none';
+    } else {
+      ccCard.style.display = '';
+    }
+  }
+
   // Update Metrics Labels dynamically based on Dashboard Mode
   const labelPending = document.querySelector('.recovery-card .metric-label');
   const labelCc = document.querySelector('.cc-dues-card .metric-label');
@@ -1751,6 +1926,19 @@ function renderMembers() {
 function renderTransactionsTable() {
   txTableBody.innerHTML = '';
   
+  // Rename table headers based on active dashboard
+  const thPerson = document.getElementById('th-person');
+  const thDesc = document.getElementById('th-desc');
+  if (thPerson && thDesc) {
+    if (isHouseDashboard(currentDashboard)) {
+      thPerson.textContent = 'घर खर्च';
+      thDesc.textContent = 'उधार';
+    } else {
+      thPerson.textContent = 'Person/Category';
+      thDesc.textContent = 'Description';
+    }
+  }
+
   const search = txSearchInput.value.toLowerCase();
 
   // Filter transactions
@@ -1896,4 +2084,40 @@ function renderTransactionsTable() {
         <div class="action-buttons">
           ${settleActionHtml}
           ${ccActionHtml}
-          <button class="action-bt
+          <button class="action-btn btn-edit" onclick="editTransactionTrigger('${tx.id}')" title="Edit">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </button>
+          <button class="action-btn btn-delete" onclick="deleteTransaction('${tx.id}')" title="Delete">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </td>
+    `;
+
+    txTableBody.appendChild(tr);
+  });
+}
+
+// Utility formatting date
+function formatDateString(dateStr) {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    // Return DD/MM/YYYY
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return dateStr;
+}
+
+// Global triggers for table buttons
+window.settleTransaction = settleTransaction;
+window.deleteTransaction = deleteTransaction;
+window.editTransactionTrigger = function(id) {
+  const tx = transactions.find(t => t.id === id);
+  if (tx) {
+    openTxModal(tx);
+  }
+};
+
+// Start
+init();
