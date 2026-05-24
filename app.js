@@ -632,7 +632,16 @@ async function loadData() {
         transactions = decompressTransactions(cloudState.txs);
       }
       if (cloudState.dashes) {
-        dashboards = decompressDashboards(cloudState.dashes);
+        const cloudDashes = decompressDashboards(cloudState.dashes);
+        // Ensure default dashboards are always present
+        defaultDashboards.forEach(defDash => {
+          if (!cloudDashes.some(d => d.id === defDash.id)) {
+            cloudDashes.push(defDash);
+          }
+        });
+        dashboards = cloudDashes;
+      } else {
+        dashboards = [...defaultDashboards];
       }
       if (cloudState.people) {
         customPeople = cloudState.people;
@@ -711,6 +720,25 @@ function loadLocalDataFallback() {
   } else {
     transactions = [...defaultTransactions];
     saveTransactions();
+  }
+
+  // Load dashboards fallback
+  const localDashboards = localStorage.getItem('vasooli_dashboards');
+  if (localDashboards) {
+    dashboards = JSON.parse(localDashboards);
+  } else {
+    dashboards = [...defaultDashboards];
+  }
+  // Ensure default dashboards are always present
+  defaultDashboards.forEach(defDash => {
+    if (!dashboards.some(d => d.id === defDash.id)) {
+      dashboards.push(defDash);
+    }
+  });
+  localStorage.setItem('vasooli_dashboards', JSON.stringify(dashboards));
+
+  if (!dashboards.some(d => d.id === currentDashboard)) {
+    currentDashboard = dashboards[0]?.id || 'udhar';
   }
 
   const localPeople = localStorage.getItem('vasooli_custom_people');
@@ -1868,40 +1896,4 @@ function renderTransactionsTable() {
         <div class="action-buttons">
           ${settleActionHtml}
           ${ccActionHtml}
-          <button class="action-btn btn-edit" onclick="editTransactionTrigger('${tx.id}')" title="Edit">
-            <i class="fa-solid fa-pen-to-square"></i>
-          </button>
-          <button class="action-btn btn-delete" onclick="deleteTransaction('${tx.id}')" title="Delete">
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
-        </div>
-      </td>
-    `;
-
-    txTableBody.appendChild(tr);
-  });
-}
-
-// Utility formatting date
-function formatDateString(dateStr) {
-  if (!dateStr) return '';
-  const parts = dateStr.split('-');
-  if (parts.length === 3) {
-    // Return DD/MM/YYYY
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  }
-  return dateStr;
-}
-
-// Global triggers for table buttons
-window.settleTransaction = settleTransaction;
-window.deleteTransaction = deleteTransaction;
-window.editTransactionTrigger = function(id) {
-  const tx = transactions.find(t => t.id === id);
-  if (tx) {
-    openTxModal(tx);
-  }
-};
-
-// Start
-init();
+          <button class="action-bt
