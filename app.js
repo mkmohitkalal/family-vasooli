@@ -768,6 +768,10 @@ async function loadData() {
           cloudMigrated = true;
         }
 
+        if (cleanExistingDuplicates()) {
+          cloudMigrated = true;
+        }
+
         if (cloudMigrated) {
           saveTransactions();
           setTimeout(() => saveDataToCloud(), 1000);
@@ -912,6 +916,53 @@ function loadLocalDataFallback() {
   } else {
     customPeople = [];
   }
+
+  cleanExistingDuplicates();
+}
+
+function cleanExistingDuplicates() {
+  let updated = false;
+
+  // 1. Deduplicate customPeople case-insensitively
+  const uniqueCustom = [];
+  const seenCustom = new Set();
+  customPeople.forEach(p => {
+    const trimmed = p.trim();
+    const lower = trimmed.toLowerCase();
+    if (!seenCustom.has(lower) && trimmed !== '') {
+      seenCustom.add(lower);
+      uniqueCustom.push(trimmed);
+    } else {
+      updated = true;
+    }
+  });
+  if (updated) {
+    customPeople = uniqueCustom;
+    saveCustomPeople();
+  }
+
+  // 2. Standardize transactions person casing based on customPeople first, then first seen casing
+  const knownPeople = ['dalpat', 'vidya', 'घर खर्च', ...customPeople];
+  transactions.forEach(tx => {
+    if (tx.person) {
+      const trimmed = tx.person.trim();
+      if (tx.person !== trimmed) {
+        tx.person = trimmed;
+        updated = true;
+      }
+      
+      const matched = knownPeople.find(kp => kp.toLowerCase() === trimmed.toLowerCase());
+      if (matched && tx.person !== matched) {
+        tx.person = matched;
+        updated = true;
+      }
+    }
+  });
+
+  if (updated) {
+    saveTransactions();
+  }
+  return updated;
 }
 
 // Save Data (Local Cache)
@@ -1393,6 +1444,16 @@ function handleParseNotes() {
   parserModal.classList.add('active');
 }
 
+// Compile dynamic known people
+function getKnownPeople() {
+  const peopleSet = new Set(['dalpat', 'vidya', 'घर खर्च']);
+  customPeople.forEach(p => peopleSet.add(p.trim()));
+  transactions.forEach(t => {
+    if (t.person) peopleSet.add(t.person.trim());
+  });
+  return Array.from(peopleSet);
+}
+
 // Parser Engine
 function parseSingleNoteLine(line) {
   line = line.trim();
@@ -1400,7 +1461,7 @@ function parseSingleNoteLine(line) {
 
   let amount = 0;
   let description = '';
-  let person = 'dalpat'; // Default
+  let person = ''; // Default to empty string instead of 'dalpat'
   let category = 'udhar'; // Default
   let mode = 'Cash'; // Default
   let type = 'lent'; // Default
@@ -1412,7 +1473,7 @@ function parseSingleNoteLine(line) {
     // Column 1 is description + amount (e.g. "1500 given to nannu friends" or "707 Jio Air Fiber Recharge")
     const descCol = cols[0] ? cols[0].trim() : '';
     // Column 2 is person name (e.g. "dalpat", "घर खर्च", "vidya")
-    person = cols[1] ? cols[1].trim() : 'dalpat';
+    person = cols[1] ? cols[1].trim() : '';
     // Column 3 is payment mode (e.g. "Cash", "Amazon Reward", "Upi Lite phonepe")
     mode = cols[2] ? cols[2].trim() : 'Cash';
 
@@ -1437,13 +1498,45 @@ function parseSingleNoteLine(line) {
       amount = parseFloat(amountMatch[1]);
     }
 
-    // Detect person
-    const categories = ['dalpat', 'vidya', 'घर खर्च', 'ghar kharch'];
-    for (const cat of categories) {
-      const reg = new RegExp('\\b' + cat + '\\b', 'i');
-      if (reg.test(line)) {
-        person = (cat === 'ghar kharch') ? 'घर खर्च' : cat;
-        break;
+    // Detect person using dynamically compiled list of known people
+    const knownPeople = getKnownPeople();
+    let matchedPerson = null;
+
+    // Sort known people by length descending to match longer names first
+    const sortedKnownPeople = [...knownPeople].sort((a, b) => b.length - a.length);
+
+    for (const p of sortedKnownPeople) {
+      let searchTerms = [p];
+      if (p === 'घर खर्च') {
+        searchTerms.push('ghar kharch', 'ghar', 'house');
+      }
+      
+      let matched = false;
+      for (const term of searchTerms) {
+        const escapedTerm = term.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        const reg = new RegExp('\\b' + escapedTerm + '\\b', 'i');
+        if (reg.test(line)) {
+          matchedPerson = p;
+          matched = true;
+          break;
+        }
+      }
+      if (matched) break;
+    }
+
+    if (matchedPerson) {
+      person = matchedPerson;
+    } else {
+      // Look for patterns like "to [Name]" or "given to [Name]" or "for [Name]" or "from [Name]"
+      const nameMatch = line.match(/(?:to|given\s+to|for|from)\s+([a-zA-Z\u0900-\u097F]+)/i);
+      if (nameMatch) {
+        const candidate = nameMatch[1].trim().toLowerCase();
+        // Check if the candidate is not a common keyword
+        const stopWords = ['cash', 'upi', 'gpay', 'phonepe', 'pay', 'recharge', 'fresh', 'canteen', 'medicine', 'blinkit', 'vegetable', 'water', 'petrol', 'scooty', 'cooler', 'ghee', 'khopra', 'thandai', 'friends', 'friend', 'rewards', 'reward', 'amazon'];
+        if (!stopWords.includes(candidate) && candidate.length > 2) {
+          // Capitalize candidate first letter
+          person = nameMatch[1].trim().charAt(0).toUpperCase() + nameMatch[1].trim().slice(1);
+        }
       }
     }
 
@@ -1468,13 +1561,23 @@ function parseSingleNoteLine(line) {
     if (amountMatch) {
       descTemp = descTemp.replace(amountMatch[0], '');
     }
-    descTemp = descTemp.replace(/dalpat/i, '')
-                       .replace(/vidya/i, '')
-                       .replace(/घर खर्च/g, '')
-                       .replace(/cash/i, '')
-                       .replace(/amazon\s*reward/i, '')
-                       .replace(/phonepe/i, '')
-                       .replace(/google\s*pay|gpay/i, '');
+    
+    // Remove detected person and synonyms from description
+    const searchTermsToRemove = [];
+    if (person) {
+      searchTermsToRemove.push(person);
+      if (person === 'घर खर्च') {
+        searchTermsToRemove.push('ghar kharch', 'ghar', 'house');
+      }
+    }
+    // Also remove default categories and common words
+    const removeKeywords = [...searchTermsToRemove, 'dalpat', 'vidya', 'cash', 'amazon\\s*reward', 'phonepe', 'google\\s*pay', 'gpay', 'upi'];
+    
+    removeKeywords.forEach(keyword => {
+      const escaped = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const reg = new RegExp('\\b' + escaped + '\\b', 'gi');
+      descTemp = descTemp.replace(reg, '');
+    });
                        
     description = descTemp.replace(/\s+/g, ' ').trim();
     if (!description) {
@@ -1624,17 +1727,22 @@ async function importSelectedParsed() {
 
   const newTransactions = [];
   toImport.forEach(item => {
-    const knownPeople = ['dalpat', 'vidya', 'घर खर्च', ...customPeople];
+    const knownPeople = getKnownPeople();
     const itemPerson = item.person.trim();
     
-    if (itemPerson && !knownPeople.some(kp => kp.toLowerCase() === itemPerson.toLowerCase())) {
-      customPeople.push(itemPerson);
+    // Find case-insensitive match in known people to standardize casing
+    const matchedPerson = knownPeople.find(kp => kp.toLowerCase() === itemPerson.toLowerCase());
+    const finalPerson = matchedPerson ? matchedPerson : itemPerson;
+
+    const baseKnown = ['dalpat', 'vidya', 'घर खर्च'];
+    if (finalPerson && !baseKnown.includes(finalPerson) && !customPeople.some(p => p.toLowerCase() === finalPerson.toLowerCase())) {
+      customPeople.push(finalPerson);
     }
 
     const newTx = {
       id: 'tx-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now(),
       date: item.date,
-      person: itemPerson,
+      person: finalPerson, // Use standardized casing
       category: item.category || 'udhar',
       amount: item.amount,
       type: item.type,
