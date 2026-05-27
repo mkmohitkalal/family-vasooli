@@ -1011,6 +1011,22 @@ function setupEventListeners() {
 
   btnSaveCustomPerson.addEventListener('click', addCustomPerson);
 
+  const btnDeletePerson = document.getElementById('btn-delete-person');
+  if (btnDeletePerson) {
+    btnDeletePerson.addEventListener('click', () => {
+      const selectedPerson = txPersonSelect.value;
+      if (!selectedPerson) {
+        showToast('Please select a person to delete', 'error');
+        return;
+      }
+      if (['dalpat', 'vidya', 'घर खर्च'].includes(selectedPerson)) {
+        showToast('Default members cannot be deleted', 'error');
+        return;
+      }
+      deleteCustomPersonTrigger(null, selectedPerson);
+    });
+  }
+
   // Parser
   btnParseNotes.addEventListener('click', handleParseNotes);
   btnCancelParser.addEventListener('click', closeModals);
@@ -1191,6 +1207,47 @@ function addCustomPerson() {
   customPersonInputGroup.style.display = 'none';
   showToast(`Added and selected "${newPerson}"`);
 }
+
+// Delete Custom Person
+async function deleteCustomPersonTrigger(e, name) {
+  if (e && e.stopPropagation) {
+    e.stopPropagation(); // Prevent filtering transactions by this member
+  }
+
+  // Count transactions for this person
+  const txCount = transactions.filter(t => t.person.toLowerCase() === name.toLowerCase()).length;
+  
+  let confirmMsg = `Are you sure you want to remove "${name}" from custom people?`;
+  if (txCount > 0) {
+    confirmMsg = `"${name}" has ${txCount} transaction(s). Removing them will NOT delete their transactions, but they will be removed from your list of custom people. Proceed?`;
+  }
+
+  if (confirm(confirmMsg)) {
+    const originalCustomPeople = [...customPeople];
+    customPeople = customPeople.filter(p => p.toLowerCase() !== name.toLowerCase());
+    saveCustomPeople();
+
+    if (currentUser) {
+      try {
+        await saveDataToCloud();
+        showToast(`Removed "${name}"`);
+      } catch (err) {
+        console.error("Error syncing custom people deletion to cloud:", err);
+        customPeople = originalCustomPeople; // rollback
+        saveCustomPeople();
+        showToast("Failed to sync deletion with cloud. Check connection.", "error");
+        return;
+      }
+    } else {
+      showToast(`Removed "${name}"`);
+    }
+
+    // Refresh UI
+    populatePersonSelect();
+    renderApp();
+  }
+}
+window.deleteCustomPersonTrigger = deleteCustomPersonTrigger;
 
 // Settle / Recover Transaction quick action
 async function settleTransaction(id) {
@@ -2003,6 +2060,13 @@ function renderMembers() {
     const activeDashObj = dashboards.find(d => d.id === currentDashboard) || { name: 'Vasooli' };
     let subsplitText = `${activeDashObj.name}: ₹${pendingAmount.toLocaleString('en-IN')}`;
 
+    const isCustom = !['dalpat', 'vidya', 'घर खर्च'].includes(member);
+    const deleteHtml = isCustom ? `
+      <button class="member-delete-btn" onclick="deleteCustomPersonTrigger(event, '${member.replace(/'/g, "\\'")}')" title="Delete Custom Person">
+        <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
+      </button>
+    ` : '';
+
     memberCard.innerHTML = `
       <div class="member-left">
         <div class="member-avatar">${initials}</div>
@@ -2012,8 +2076,11 @@ function renderMembers() {
           <span class="member-sub-splits">${subsplitText}</span>
         </div>
       </div>
-      <div class="member-right">
-        <span class="member-amount ${pendingAmount > 0 ? 'amount-lent' : 'text-muted'}">₹${pendingAmount.toLocaleString('en-IN')}</span>
+      <div class="member-right" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          ${deleteHtml}
+          <span class="member-amount ${pendingAmount > 0 ? 'amount-lent' : 'text-muted'}">₹${pendingAmount.toLocaleString('en-IN')}</span>
+        </div>
         <span class="member-tx-count">Pending</span>
       </div>
     `;

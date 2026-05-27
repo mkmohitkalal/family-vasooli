@@ -936,8 +936,22 @@ textarea:focus {
 
 .select-with-new {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 0.5rem;
+}
+
+.member-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+  margin-right: 4px;
+}
+
+.member-delete-btn:hover {
+  color: #ef4444 !important;
 }
 
 .input-inline {
