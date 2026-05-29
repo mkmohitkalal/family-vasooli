@@ -731,6 +731,27 @@ function forceOverwriteHouse() {
   return true;
 }
 
+// Overwrite and force reset all data to default template once
+function forceResetAllData() {
+  const flagKey = 'vasooli_force_reset_all_v6';
+  if (localStorage.getItem(flagKey) === 'true') return false;
+
+  // Reset to default transactions and clear custom people
+  transactions = JSON.parse(JSON.stringify(defaultTransactions));
+  customPeople = [];
+
+  saveTransactions();
+  saveCustomPeople();
+
+  localStorage.setItem(flagKey, 'true');
+  console.log("Forced reset of all data to default template completed!");
+  
+  if (currentUser) {
+    setTimeout(() => saveDataToCloud(), 1500);
+  }
+  return true;
+}
+
 // Load Data from Cloud (online) or LocalStorage (offline)
 async function loadData() {
   if (currentUser && currentUser.uhash) {
@@ -739,30 +760,35 @@ async function loadData() {
       if (cloudState.txs) {
         transactions = decompressTransactions(cloudState.txs);
         let cloudMigrated = false;
-        transactions.forEach(tx => {
-          if (tx.person === 'घर खर्च' && tx.category !== 'udhar') {
-            tx.category = 'udhar';
+
+        if (forceResetAllData()) {
+          cloudMigrated = true;
+        } else {
+          transactions.forEach(tx => {
+            if (tx.person === 'घर खर्च' && tx.category !== 'udhar') {
+              tx.category = 'udhar';
+              cloudMigrated = true;
+            }
+            if (tx.id.startsWith('tx-ss-') && tx.category !== 'house') {
+              tx.category = 'house';
+              cloudMigrated = true;
+            }
+          });
+
+          if (forceOverwriteUdhar()) {
             cloudMigrated = true;
           }
-          if (tx.id.startsWith('tx-ss-') && tx.category !== 'house') {
-            tx.category = 'house';
+          if (forceOverwriteHouse()) {
             cloudMigrated = true;
           }
-        });
 
-        if (forceOverwriteUdhar()) {
-          cloudMigrated = true;
-        }
-        if (forceOverwriteHouse()) {
-          cloudMigrated = true;
-        }
+          if (deduplicateTransactions()) {
+            cloudMigrated = true;
+          }
 
-        if (deduplicateTransactions()) {
-          cloudMigrated = true;
-        }
-
-        if (cleanExistingDuplicates()) {
-          cloudMigrated = true;
+          if (cleanExistingDuplicates()) {
+            cloudMigrated = true;
+          }
         }
 
         if (cloudMigrated) {
@@ -823,50 +849,53 @@ function loadLocalDataFallback() {
 
   if (localTxs) {
     transactions = JSON.parse(localTxs);
-
-    transactions.forEach(tx => {
-      if (tx.id === 'tx-5' || tx.id === 'tx-6' || tx.id === 'tx-8') {
-        if (tx.category !== 'udhar') {
-          tx.category = 'udhar';
-          tx.person = 'घर खर्च';
-          migrated = true;
-        }
-      } else if (tx.id.startsWith('tx-ss-')) {
-        if (tx.category !== 'house') {
-          tx.category = 'house';
-          migrated = true;
-        }
-      } else if (!tx.category) {
-        if (tx.person === 'घर खर्च') {
-          tx.category = 'udhar';
-        } else {
-          tx.category = 'udhar';
-        }
-        migrated = true;
-      }
-    });
-
-    const hasSsTx = transactions.some(t => t.id === 'tx-ss-1');
-    if (!hasSsTx) {
-      const ssTxs = defaultTransactions.filter(t => t.id.startsWith('tx-ss-'));
-      transactions = [...ssTxs, ...transactions];
-      migrated = true;
-    }
-
     let localUpdated = false;
 
-    // Force Overwrite Mohit Personal entries once
-    if (forceOverwriteUdhar()) {
+    if (forceResetAllData()) {
       localUpdated = true;
-    }
-    // Force Overwrite House split entries once
-    if (forceOverwriteHouse()) {
-      localUpdated = true;
-    }
+    } else {
+      transactions.forEach(tx => {
+        if (tx.id === 'tx-5' || tx.id === 'tx-6' || tx.id === 'tx-8') {
+          if (tx.category !== 'udhar') {
+            tx.category = 'udhar';
+            tx.person = 'घर खर्च';
+            migrated = true;
+          }
+        } else if (tx.id.startsWith('tx-ss-')) {
+          if (tx.category !== 'house') {
+            tx.category = 'house';
+            migrated = true;
+          }
+        } else if (!tx.category) {
+          if (tx.person === 'घर खर्च') {
+            tx.category = 'udhar';
+          } else {
+            tx.category = 'udhar';
+          }
+          migrated = true;
+        }
+      });
 
-    // Deduplicate
-    if (deduplicateTransactions()) {
-      localUpdated = true;
+      const hasSsTx = transactions.some(t => t.id === 'tx-ss-1');
+      if (!hasSsTx) {
+        const ssTxs = defaultTransactions.filter(t => t.id.startsWith('tx-ss-'));
+        transactions = [...ssTxs, ...transactions];
+        migrated = true;
+      }
+
+      // Force Overwrite Mohit Personal entries once
+      if (forceOverwriteUdhar()) {
+        localUpdated = true;
+      }
+      // Force Overwrite House split entries once
+      if (forceOverwriteHouse()) {
+        localUpdated = true;
+      }
+
+      // Deduplicate
+      if (deduplicateTransactions()) {
+        localUpdated = true;
+      }
     }
 
     if (migrated || localUpdated) {
@@ -1025,6 +1054,20 @@ function setupEventListeners() {
   btnBackup.addEventListener('click', exportToJSON);
   btnRestoreTrigger.addEventListener('click', () => restoreFileInput.click());
   restoreFileInput.addEventListener('change', importFromJSON);
+
+  // Reset Template Action
+  const btnResetTemplate = document.getElementById('btn-reset-template');
+  if (btnResetTemplate) {
+    btnResetTemplate.addEventListener('click', () => {
+      if (confirm("Are you sure you want to reset all transactions and custom people to the clean default template data? This will wipe your current changes and sync the clean template to the cloud.")) {
+        localStorage.removeItem('vasooli_force_reset_all_v6');
+        forceResetAllData();
+        populatePersonSelect();
+        renderApp();
+        showToast("Data reset to default template successfully!");
+      }
+    });
+  }
 
   // Cloud Settings Modal Trigger
   btnCloudSettings.addEventListener('click', () => {
