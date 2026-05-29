@@ -761,34 +761,30 @@ async function loadData() {
         transactions = decompressTransactions(cloudState.txs);
         let cloudMigrated = false;
 
-        if (forceResetAllData()) {
+        transactions.forEach(tx => {
+          if (tx.person === 'घर खर्च' && tx.category !== 'udhar') {
+            tx.category = 'udhar';
+            cloudMigrated = true;
+          }
+          if (tx.id.startsWith('tx-ss-') && tx.category !== 'house') {
+            tx.category = 'house';
+            cloudMigrated = true;
+          }
+        });
+
+        if (forceOverwriteUdhar()) {
           cloudMigrated = true;
-        } else {
-          transactions.forEach(tx => {
-            if (tx.person === 'घर खर्च' && tx.category !== 'udhar') {
-              tx.category = 'udhar';
-              cloudMigrated = true;
-            }
-            if (tx.id.startsWith('tx-ss-') && tx.category !== 'house') {
-              tx.category = 'house';
-              cloudMigrated = true;
-            }
-          });
+        }
+        if (forceOverwriteHouse()) {
+          cloudMigrated = true;
+        }
 
-          if (forceOverwriteUdhar()) {
-            cloudMigrated = true;
-          }
-          if (forceOverwriteHouse()) {
-            cloudMigrated = true;
-          }
+        if (deduplicateTransactions()) {
+          cloudMigrated = true;
+        }
 
-          if (deduplicateTransactions()) {
-            cloudMigrated = true;
-          }
-
-          if (cleanExistingDuplicates()) {
-            cloudMigrated = true;
-          }
+        if (cleanExistingDuplicates()) {
+          cloudMigrated = true;
         }
 
         if (cloudMigrated) {
@@ -851,51 +847,47 @@ function loadLocalDataFallback() {
     transactions = JSON.parse(localTxs);
     let localUpdated = false;
 
-    if (forceResetAllData()) {
-      localUpdated = true;
-    } else {
-      transactions.forEach(tx => {
-        if (tx.id === 'tx-5' || tx.id === 'tx-6' || tx.id === 'tx-8') {
-          if (tx.category !== 'udhar') {
-            tx.category = 'udhar';
-            tx.person = 'घर खर्च';
-            migrated = true;
-          }
-        } else if (tx.id.startsWith('tx-ss-')) {
-          if (tx.category !== 'house') {
-            tx.category = 'house';
-            migrated = true;
-          }
-        } else if (!tx.category) {
-          if (tx.person === 'घर खर्च') {
-            tx.category = 'udhar';
-          } else {
-            tx.category = 'udhar';
-          }
+    transactions.forEach(tx => {
+      if (tx.id === 'tx-5' || tx.id === 'tx-6' || tx.id === 'tx-8') {
+        if (tx.category !== 'udhar') {
+          tx.category = 'udhar';
+          tx.person = 'घर खर्च';
           migrated = true;
         }
-      });
-
-      const hasSsTx = transactions.some(t => t.id === 'tx-ss-1');
-      if (!hasSsTx) {
-        const ssTxs = defaultTransactions.filter(t => t.id.startsWith('tx-ss-'));
-        transactions = [...ssTxs, ...transactions];
+      } else if (tx.id.startsWith('tx-ss-')) {
+        if (tx.category !== 'house') {
+          tx.category = 'house';
+          migrated = true;
+        }
+      } else if (!tx.category) {
+        if (tx.person === 'घर खर्च') {
+          tx.category = 'udhar';
+        } else {
+          tx.category = 'udhar';
+        }
         migrated = true;
       }
+    });
 
-      // Force Overwrite Mohit Personal entries once
-      if (forceOverwriteUdhar()) {
-        localUpdated = true;
-      }
-      // Force Overwrite House split entries once
-      if (forceOverwriteHouse()) {
-        localUpdated = true;
-      }
+    const hasSsTx = transactions.some(t => t.id === 'tx-ss-1');
+    if (!hasSsTx) {
+      const ssTxs = defaultTransactions.filter(t => t.id.startsWith('tx-ss-'));
+      transactions = [...ssTxs, ...transactions];
+      migrated = true;
+    }
 
-      // Deduplicate
-      if (deduplicateTransactions()) {
-        localUpdated = true;
-      }
+    // Force Overwrite Mohit Personal entries once
+    if (forceOverwriteUdhar()) {
+      localUpdated = true;
+    }
+    // Force Overwrite House split entries once
+    if (forceOverwriteHouse()) {
+      localUpdated = true;
+    }
+
+    // Deduplicate
+    if (deduplicateTransactions()) {
+      localUpdated = true;
     }
 
     if (migrated || localUpdated) {
