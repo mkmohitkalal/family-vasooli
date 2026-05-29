@@ -749,13 +749,6 @@ async function loadData() {
             cloudMigrated = true;
           }
         });
-        // Ensure all default transactions are present in cloud loaded list
-        defaultTransactions.forEach(defTx => {
-          if (!transactions.some(t => t.id === defTx.id)) {
-            transactions.push(defTx);
-            cloudMigrated = true;
-          }
-        });
 
         if (forceOverwriteUdhar()) {
           cloudMigrated = true;
@@ -860,14 +853,7 @@ function loadLocalDataFallback() {
       migrated = true;
     }
 
-    // Ensure all default transactions are present locally
     let localUpdated = false;
-    defaultTransactions.forEach(defTx => {
-      if (!transactions.some(t => t.id === defTx.id)) {
-        transactions.push(defTx);
-        localUpdated = true;
-      }
-    });
 
     // Force Overwrite Mohit Personal entries once
     if (forceOverwriteUdhar()) {
